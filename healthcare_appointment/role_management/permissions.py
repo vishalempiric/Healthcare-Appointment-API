@@ -1,8 +1,8 @@
 from rest_framework import permissions
 
-class IsHROrAdminOnly(permissions.BasePermission):
+class IsAdminOnly(permissions.BasePermission):
     
-    ROLES = {'HR', 'Admin'}
+    ROLES = {'Admin'}
 
     def has_permission(self, request, view):
         user = request.user
