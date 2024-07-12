@@ -10,8 +10,8 @@ class RoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'title']
     
     def create(self, validated_data):
-        user = Role.objects.create(**validated_data)
-        return user
+        role = Role.objects.create(**validated_data)
+        return role
 
     def update(self, instance, validated_data):
         for key, value in validated_data.items():
