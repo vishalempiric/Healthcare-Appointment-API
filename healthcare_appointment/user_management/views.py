@@ -13,11 +13,13 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # Local Imports
-from .models import User
+from .models import DoctorProfile, PatientProfile, User
 from .serializers import (
+    DoctorProfileSerializer,
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
+    PatientProfileSerializer,
     UserSerializer,
 )
 from healthcare_appointment.utils import handle_exception
@@ -117,3 +119,36 @@ class PasswordResetConfirmView(views.APIView):
             return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Invalid token or user ID."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileView(views.APIView):
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    @handle_exception
+    def patch(self, request):
+        if request.user.role.title == 'doctor':
+            doctor_profile = get_object_or_404(DoctorProfile, user=request.user)
+            serializer = DoctorProfileSerializer(doctor_profile, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"message": "User updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+        elif request.user.role.title == 'patient':
+            patient_profile = get_object_or_404(PatientProfile, user=request.user)
+            serializer = PatientProfileSerializer(patient_profile, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({"message": "User updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+
+    @handle_exception 
+    def get(self, request):
+        if request.user.role.title == 'doctor':
+            doctor_profile = get_object_or_404(DoctorProfile, user=request.user)
+            serializer = DoctorProfileSerializer(doctor_profile)
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+        elif request.user.role.title == 'patient':
+            patient_profile = get_object_or_404(PatientProfile, user=request.user)
+            serializer = PatientProfileSerializer(patient_profile)
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
