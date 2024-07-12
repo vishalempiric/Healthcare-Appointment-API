@@ -6,7 +6,7 @@ from django.utils.http import urlsafe_base64_encode
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
-from .models import User
+from .models import DoctorProfile, PatientProfile, User
 from .utils import send_custom_email
 
 
@@ -38,6 +38,17 @@ class UserSerializer(serializers.ModelSerializer):
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$', value):
             raise ValidationError("Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number")
         return value
+    
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     role = instance.role.title
+    #     if role == 'patient':
+    #         representation['medical_history'] = instance.patient_profile.medical_history
+    #         representation['insurance_details'] = instance.patient_profile.insurance_details
+    #     elif role == 'doctor':
+    #         representation['specialty'] = instance.patient_profile.specialty
+    #         representation['qualifications'] = instance.patient_profile.qualifications
+    #     return representation
 
 
 class LoginSerializer(serializers.Serializer):
@@ -82,3 +93,27 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     def save(self, user):
         user.set_password(self.validated_data['new_password'])
         user.save()
+
+
+class DoctorProfileSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = DoctorProfile
+        fields = ['specialty', 'qualifications']
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        return instance
+        
+
+class PatientProfileSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = PatientProfile
+        fields = ['medical_history', 'insurance_details']
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        return instance
