@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'user_management',
     'role_management',
+    'appointment_management',
 ]
 
 MIDDLEWARE = [
