@@ -13,14 +13,14 @@ from .models import Role
 from .serializers import RoleSerializer
 
 from healthcare_appointment.utils import handle_exception
-from .permissions import IsHROrAdminOnly
+from .permissions import IsAdminOnly
 
 
 # Create your views here.
 class RoleCRUDAPIView(views.APIView):
 
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsHROrAdminOnly, IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminOnly, IsAuthenticated]
 
     @handle_exception
     def post(self, request, *args, **kwargs):
@@ -34,8 +34,6 @@ class RoleCRUDAPIView(views.APIView):
         id = kwargs.get('id')
         if id:
             role = get_object_or_404(Role, pk=id)
-            if not role.status:
-                return Response({"error": "Role Not Found", }, status=status.HTTP_404_NOT_FOUND)
             serializer = RoleSerializer(role)
             return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         else:
@@ -46,8 +44,6 @@ class RoleCRUDAPIView(views.APIView):
     @handle_exception
     def patch(self, request, id):
         role = get_object_or_404(Role, pk=id)
-        if not role.status:
-            return Response({"error": "Role Not Found", }, status=status.HTTP_404_NOT_FOUND)
         serializer = RoleSerializer(role, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -56,8 +52,6 @@ class RoleCRUDAPIView(views.APIView):
     @handle_exception
     def put(self, request, id):
         role = get_object_or_404(Role, pk=id)
-        if not role.status:
-            return Response({"error": "Role Not Found", }, status=status.HTTP_404_NOT_FOUND)
         serializer = RoleSerializer(role, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -66,7 +60,6 @@ class RoleCRUDAPIView(views.APIView):
     @handle_exception
     def delete(self, request, id):
         role = get_object_or_404(Role, pk=id)
-        role.status = False
         role.deleted_at = timezone.now()
         role.save()
         return Response({"message": "Role Deleted successfully"}, status=status.HTTP_200_OK)
